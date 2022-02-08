@@ -1,3 +1,12 @@
+use scanner::scanner::Scanner;
+use std::env;
+use std::fs;
+
+mod scanner;
 fn main() {
-    println!("Hello, world!");
+    let args: Vec<String> = env::args().collect();
+    let filename = &args[1];
+    let contents = fs::read_to_string(filename).expect("Something went wrong reading the file");
+    let scanner = Scanner::new(contents);
+    
 }
