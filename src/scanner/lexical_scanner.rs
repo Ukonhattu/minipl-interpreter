@@ -123,7 +123,6 @@ impl Scanner {
                         }
                         st += &it.next().unwrap_or_default().to_string();
                     }
-
                 }
             }
         }
