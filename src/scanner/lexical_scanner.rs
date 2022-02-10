@@ -108,8 +108,7 @@ impl Scanner {
                 }
                 _ => { // is it keyword? if not, then it is an identifier
                     let mut st = c.to_string();
-                    loop {
-                        
+                    loop {                      
                         match it.peek() {
                             Some(n) if matches!(n, ' ' | '+' | '-' | '*' | '/' | '<' | '&' | '!' | ';' | ':' | '.' | '(' | ')' | '\n' | '\r') => {
                                 match st.as_str() {
