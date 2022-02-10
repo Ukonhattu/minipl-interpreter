@@ -50,7 +50,7 @@ impl Scanner {
                 '/' => { // Detect comment blocks (Skip the rest of the line if "//")
                     match it.peek() {
                         Some('/') => {
-                            while let Some(n) = it.next() {
+                            for n in it.by_ref() {
                                 if n == '\n' {
                                     break;
                                 }
