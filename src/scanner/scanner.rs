@@ -8,7 +8,7 @@ impl Scanner {
     
     pub fn new(program: String) -> Self {
         Self {
-            program: program,
+            program,
         }
     }
     pub fn scan(&self) -> Result<Vec<LexItem>, String> {
