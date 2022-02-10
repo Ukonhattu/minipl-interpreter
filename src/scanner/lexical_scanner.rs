@@ -76,7 +76,6 @@ impl Scanner {
                 }
                 '"' => { //Strings as one token
                     let mut st = String::new();
-                    
                     while let Some(n) = it.next() {
                         match n {
                             '"' => break,
@@ -87,7 +86,6 @@ impl Scanner {
                                             st += &m.to_string();
                                             it.next();
                                         }
-
                                         _ => {
                                             st += &n.to_string();
                                             st += &m.to_string();
