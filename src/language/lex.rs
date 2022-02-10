@@ -9,5 +9,5 @@ pub enum LexItem {
     Assign(String),
     StatementEnd(char),
     Separator(char),
-    Range(String)
+    Range(String),
 }
