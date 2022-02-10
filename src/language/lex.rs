@@ -3,6 +3,7 @@ pub enum LexItem {
     Parenthesis(char),
     Operator(char),
     Integer(String),
+    String(String),
     Keyword(String),
     Identifier(String),
     Assign(String),
