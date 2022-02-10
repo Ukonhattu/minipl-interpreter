@@ -28,7 +28,7 @@ impl Scanner {
                 ':' => {
                     match it.peek() {
                         Some('=') => {
-                            result.push(LexItem::Assign(":=".to_string()));// TODO Keyword as a placeholder!!!
+                            result.push(LexItem::Assign(":=".to_string()));
                             it.next();
                         }
                         _ => {
