@@ -69,6 +69,22 @@ impl Scanner {
                     while let Some(n) = it.next() {
                         match n {
                             '"' => break,
+                            '\\' => {
+                                if let Some(m) = it.peek() {
+                                    match m {
+                                        '\\' => {
+                                            st += &m.to_string();
+                                            it.next();
+                                        }
+
+                                        _ => {
+                                            st += &n.to_string();
+                                            st += &m.to_string();
+                                            it.next();
+                                        }
+                                    }
+                                }
+                            }
                             _ => {
                                 st += &n.to_string()
                             }
@@ -82,7 +98,7 @@ impl Scanner {
                     loop {
                         
                         match it.peek() {
-                            Some(n) if matches!(n, ' ' | '+' | '-' | '*' | '/' | '<' | '&' | '!' | ';' | ':') => {
+                            Some(n) if matches!(n, ' ' | '+' | '-' | '*' | '/' | '<' | '&' | '!' | ';' | ':' | '(' | ')' | '\n' | '\r') => {
                                 match st.as_str() {
                                     "var" | "for" | "end" | "in" | "do" | "read" | "print" | "int" | "string" | "bool" | "assert" => result.push(LexItem::Keyword(st.to_string())),
                                     _ => result.push(LexItem::Identifier(st.to_string()))
