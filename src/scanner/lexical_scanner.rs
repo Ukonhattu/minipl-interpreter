@@ -101,8 +101,7 @@ impl Scanner {
                             }
                         }
                     }
-                    result.push(LexItem::String(st))
-                    
+                    result.push(LexItem::String(st))                  
                 }
                 _ => { // is it keyword? if not, then it is an identifier
                     let mut st = c.to_string();
