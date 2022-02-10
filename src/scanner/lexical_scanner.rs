@@ -65,9 +65,9 @@ impl Scanner {
                 }
                 '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => { //is it number (ints only so far)
                     let mut number = c.to_string();
-                    loop {  
-                        match it.peek() {
-                            Some(n) if matches!(n, '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9') => (),// 0 at a start? -- No decimals in minipl!
+                    while let Some(n) = it.peek() {
+                        match n {
+                            '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => (),
                             _ => {
                                 result.push(LexItem::Integer(number.to_string()));
                                 break;
@@ -126,6 +126,7 @@ impl Scanner {
                         }
                         st += &it.next().unwrap_or_default().to_string();
                     }
+
                 }
             }
         }

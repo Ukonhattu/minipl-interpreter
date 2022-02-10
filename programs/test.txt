@@ -1,4 +1,4 @@
-var nTimes : int := 0; // this is a comment
+var nTimes : int := 256; // this is a comment
 print "How many times?";
 read nTimes;
 var x : int;
