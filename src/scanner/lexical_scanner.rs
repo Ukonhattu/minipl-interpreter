@@ -21,8 +21,7 @@ impl Scanner {
                         ';' => result.push(LexItem::StatementEnd(c)),
                         ' ' | '\n' | '\r' => (),
                         _ => result.push(LexItem::Operator(c))
-                    }
-                    
+                    }                    
                 }
                 ':' => { // is it : or :=
                     match it.peek() {
@@ -60,8 +59,7 @@ impl Scanner {
                         _ => {
                             result.push(LexItem::Operator(c))
                         }
-                    }
-                    
+                    }                   
                 }
                 '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => { //is it number (ints only so far)
                     let mut number = c.to_string();
@@ -130,10 +128,6 @@ impl Scanner {
             }
         }
         Ok(result)
-    }
-    
-    
-    
-    
+    } 
 }
 
