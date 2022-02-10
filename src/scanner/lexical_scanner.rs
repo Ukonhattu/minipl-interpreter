@@ -1,5 +1,4 @@
-
-use super::token_checker::LexItem;
+use crate::language::{lex::LexItem};
 pub struct Scanner {
     program: String,
 }

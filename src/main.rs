@@ -1,6 +1,7 @@
-use scanner::scanner::Scanner;
+use scanner::lexical_scanner::Scanner;
 use std::env;
 use std::fs;
+mod language;
 
 mod scanner;
 fn main() {
