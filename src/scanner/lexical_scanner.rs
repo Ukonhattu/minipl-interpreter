@@ -170,7 +170,7 @@ impl Scanner {
     }
 
     fn advance(it: &mut impl Iterator<Item = char>, column_number: &mut i32) -> Option<char> {
-        *column_number = *column_number + 1;
+        *column_number += 1;
         it.next()
     }
 }
