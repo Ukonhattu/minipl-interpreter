@@ -11,9 +11,8 @@ impl Scanner {
         let mut it = self.program.chars().peekable();
         let mut result: Vec<LexItem> = Vec::new();
         let mut line_number = 1;
-        let mut column_number = 1;
-        while let Some(c) = it.next() {
-            column_number += 1;
+        let mut column_number = 0;
+        while let Some(c) = Scanner::advance(&mut it, &mut column_number) {
             match c {
                 ' ' | '+' | '-' | '*' | '<' | '&' | '!' | ';' | '(' | ')' | '\n' | '\r' => {
                     //Detect one character delimeters
@@ -22,7 +21,7 @@ impl Scanner {
                         ';' => result.push(LexItem::StatementEnd(c)),
                         '\n' => {
                             line_number += 1;
-                            column_number = 1;
+                            column_number = 0;
                         }
                         ' ' | '\r' => (),
                         _ => result.push(LexItem::Operator(c)),
@@ -33,7 +32,7 @@ impl Scanner {
                     match it.peek() {
                         Some('=') => {
                             result.push(LexItem::Assign(":=".to_string()));
-                            it.next();
+                            Scanner::advance(&mut it, &mut column_number);
                         }
                         _ => result.push(LexItem::Separator(':')),
                     }
@@ -85,7 +84,7 @@ impl Scanner {
                 '"' => {
                     //Strings as one token
                     let mut st = String::new();
-                    while let Some(n) = it.next() {
+                    while let Some(n) = Scanner::advance(&mut it, &mut column_number) {
                         match n {
                             '"' => break,
                             '\\' => {
