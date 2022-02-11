@@ -69,7 +69,7 @@ impl Scanner {
                         ' ' | '\r' => (),
                         _ => {
                             return Err(format!(
-                                "Something went wrong! Line {} Column {}",
+                                "Something went wrong! Line {} Column {}", // This should not be possible to reach!
                                 line_number, column_number
                             ))
                         }
