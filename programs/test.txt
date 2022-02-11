@@ -2,7 +2,7 @@ var nTimes : int := 256; // this is a comment
 print "How many times?";
 read nTimes;
 var x : int;
-for x in 0..nTimes-1 do
+for x in 0..nTimes-1 do.
 print x;
 print " : Hello, World!\n";
 print " : \" hehe";

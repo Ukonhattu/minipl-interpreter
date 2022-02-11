@@ -10,14 +10,21 @@ impl Scanner {
     pub fn scan(&self) -> Result<Vec<LexItem>, String> {
         let mut it = self.program.chars().peekable();
         let mut result: Vec<LexItem> = Vec::new();
+        let mut line_number = 1;
+        let mut column_number = 1;
         while let Some(c) = it.next() {
+            column_number += 1;
             match c {
                 ' ' | '+' | '-' | '*' | '<' | '&' | '!' | ';' | '(' | ')' | '\n' | '\r' => {
                     //Detect one character delimeters
                     match c {
                         '(' | ')' => result.push(LexItem::Parenthesis(c)),
                         ';' => result.push(LexItem::StatementEnd(c)),
-                        ' ' | '\n' | '\r' => (),
+                        '\n' => {
+                            line_number += 1;
+                            column_number = 1;
+                        }
+                        ' ' | '\r' => (),
                         _ => result.push(LexItem::Operator(c)),
                     }
                 }
@@ -36,10 +43,10 @@ impl Scanner {
                         match n {
                             '.' => {
                                 result.push(LexItem::Range("..".to_string()));
-                                it.next();
+                                Scanner::advance(&mut it, &mut column_number);
                             }
                             _ => {
-                                return Err(format!("Unexpected character {}", c));
+                                return Err(format!("Unexpected character {}, line {}, column {}", c, line_number, column_number));
                                 // Everything else we can take but one damn comma is a no! (Add decimal later)
                             }
                         }
@@ -47,15 +54,18 @@ impl Scanner {
                 }
                 '/' => {
                     // Detect comment blocks (Skip the rest of the line if "//")
-                    match it.peek() {
-                        Some('/') => {
-                            for n in it.by_ref() {
-                                if n == '\n' {
-                                    break;
+                    if let Some(n) = it.peek() {
+                        match n {
+                            '/' => {
+                                for m in it.by_ref() {
+                                    if m == '\n' {
+                                        line_number += 1;
+                                        break;
+                                    }
                                 }
                             }
+                            _ => result.push(LexItem::Operator(c))
                         }
-                        _ => result.push(LexItem::Operator(c)),
                     }
                 }
                 '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
@@ -69,7 +79,7 @@ impl Scanner {
                                 break;
                             }
                         }
-                        number += &it.next().unwrap_or_default().to_string();
+                        number += &Scanner::advance(&mut it, &mut column_number).unwrap_or_default().to_string();
                     }
                 }
                 '"' => {
@@ -83,12 +93,12 @@ impl Scanner {
                                     match m {
                                         '\\' => {
                                             st += &m.to_string();
-                                            it.next();
+                                            Scanner::advance(&mut it, &mut column_number);
                                         }
                                         _ => {
                                             st += &n.to_string();
                                             st += &m.to_string();
-                                            it.next();
+                                            Scanner::advance(&mut it, &mut column_number);
                                         }
                                     }
                                 }
@@ -137,11 +147,16 @@ impl Scanner {
                                 break;
                             }
                         }
-                        st += &it.next().unwrap_or_default().to_string();
+                        st += &Scanner::advance(&mut it, &mut column_number).unwrap_or_default().to_string();
                     }
                 }
             }
         }
         Ok(result)
+    }
+
+    fn advance(it: &mut impl Iterator<Item = char>, column_number: &mut i32) -> Option<char> {
+        *column_number = *column_number + 1;
+        it.next()
     }
 }
