@@ -1,4 +1,4 @@
-use crate::language::lex::LexItem;
+use crate::language::lex::{LexItem, LexItemInfo};
 pub struct Scanner {
     program: String,
 }
@@ -17,31 +17,31 @@ impl Scanner {
                 ' ' | '+' | '-' | '*' | '<' | '&' | '!' | ';' | '(' | ')' | '\n' | '\r' => {
                     //Detect one character delimeters
                     match c {
-                        '(' | ')' => result.push(LexItem::Parenthesis(c)),
-                        ';' => result.push(LexItem::StatementEnd(c)),
+                        '(' | ')' => result.push(LexItem::Parenthesis(LexItemInfo{text: c.to_string(), line_number, column_number})),
+                        ';' => result.push(LexItem::StatementEnd(LexItemInfo{text: c.to_string(), line_number, column_number})),
                         '\n' => {
                             line_number += 1;
                             column_number = 0;
                         }
                         ' ' | '\r' => (),
-                        _ => result.push(LexItem::Operator(c)),
+                        _ => result.push(LexItem::Operator(LexItemInfo{text: c.to_string(), line_number, column_number})),
                     }
                 }
                 ':' => {
                     // is it : or :=
                     match it.peek() {
                         Some('=') => {
-                            result.push(LexItem::Assign(":=".to_string()));
+                            result.push(LexItem::Assign(LexItemInfo{text: ":=".to_string(), line_number, column_number}));
                             Scanner::advance(&mut it, &mut column_number);
                         }
-                        _ => result.push(LexItem::Separator(':')),
+                        _ => result.push(LexItem::Separator(LexItemInfo{text: ":".to_string(), line_number, column_number})),
                     }
                 }
                 '.' => {
                     if let Some(n) = it.peek() {
                         match n {
                             '.' => {
-                                result.push(LexItem::Range("..".to_string()));
+                                result.push(LexItem::Range(LexItemInfo{text: ":".to_string(), line_number, column_number}));
                                 Scanner::advance(&mut it, &mut column_number);
                             }
                             _ => {
@@ -63,7 +63,7 @@ impl Scanner {
                                     }
                                 }
                             }
-                            _ => result.push(LexItem::Operator(c))
+                            _ => result.push(LexItem::Operator(LexItemInfo{text: c.to_string(), line_number, column_number}))
                         }
                     }
                 }
@@ -74,7 +74,7 @@ impl Scanner {
                         match n {
                             '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => (),
                             _ => {
-                                result.push(LexItem::Integer(number.to_string()));
+                                result.push(LexItem::Integer(LexItemInfo{text: c.to_string(), line_number, column_number}));
                                 break;
                             }
                         }
@@ -105,7 +105,7 @@ impl Scanner {
                             _ => st += &n.to_string(),
                         }
                     }
-                    result.push(LexItem::String(st))
+                    result.push(LexItem::String(LexItemInfo{text: st.to_string(), line_number, column_number}))
                 }
                 _ => {
                     // is it keyword? if not, then it is an identifier
@@ -134,15 +134,15 @@ impl Scanner {
                                 match st.as_str() {
                                     "var" | "for" | "end" | "in" | "do" | "read" | "print"
                                     | "int" | "string" | "bool" | "assert" => {
-                                        result.push(LexItem::Keyword(st.to_string()))
+                                        result.push(LexItem::Keyword(LexItemInfo{text: st.to_string(), line_number, column_number}))
                                     }
-                                    _ => result.push(LexItem::Identifier(st.to_string())),
+                                    _ => result.push(LexItem::Identifier(LexItemInfo{text: st.to_string(), line_number, column_number})),
                                 }
                                 break;
                             }
                             Some(_) => (),
                             None => {
-                                result.push(LexItem::Identifier(st.to_string()));
+                                result.push(LexItem::Identifier(LexItemInfo{text: st.to_string(), line_number, column_number}));
                                 break;
                             }
                         }
