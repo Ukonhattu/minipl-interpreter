@@ -17,14 +17,22 @@ impl Scanner {
                 ' ' | '+' | '-' | '*' | '<' | '&' | '!' | ';' | '(' | ')' | '\n' | '\r' => {
                     //Detect one character delimeters
                     match c {
-                        '(' | ')' => result.push(LexItem::Parenthesis(LexItemInfo{text: c.to_string(), line_number, column_number})),
+                        '+' => result.push(LexItem::Plus(LexItemInfo{text: c.to_string(), line_number, column_number})),
+                        '-' => result.push(LexItem::Minus(LexItemInfo{text: c.to_string(), line_number, column_number})),
+                        '*' => result.push(LexItem::Star(LexItemInfo{text: c.to_string(), line_number, column_number})),
+                        '<' => result.push(LexItem::LessThan(LexItemInfo{text: c.to_string(), line_number, column_number})),
+                        '&' => result.push(LexItem::And(LexItemInfo{text: c.to_string(), line_number, column_number})),
+                        '!' => result.push(LexItem::Not(LexItemInfo{text: c.to_string(), line_number, column_number})),
                         ';' => result.push(LexItem::StatementEnd(LexItemInfo{text: c.to_string(), line_number, column_number})),
+                        '(' => result.push(LexItem::LeftParen(LexItemInfo{text: c.to_string(), line_number, column_number})),
+                        ')' => result.push(LexItem::RightParen(LexItemInfo{text: c.to_string(), line_number, column_number})),
                         '\n' => {
                             line_number += 1;
                             column_number = 0;
                         }
                         ' ' | '\r' => (),
-                        _ => result.push(LexItem::Operator(LexItemInfo{text: c.to_string(), line_number, column_number})),
+                        _ => return Err(format!("Something went wrong! Line {} Column {}", line_number, column_number))
+                       
                     }
                 }
                 ':' => {
@@ -63,7 +71,7 @@ impl Scanner {
                                     }
                                 }
                             }
-                            _ => result.push(LexItem::Operator(LexItemInfo{text: c.to_string(), line_number, column_number}))
+                            _ => result.push(LexItem::Slash(LexItemInfo{text: c.to_string(), line_number, column_number}))
                         }
                     }
                 }
@@ -74,7 +82,7 @@ impl Scanner {
                         match n {
                             '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => (),
                             _ => {
-                                result.push(LexItem::Integer(LexItemInfo{text: c.to_string(), line_number, column_number}));
+                                result.push(LexItem::IntegerLiteral(LexItemInfo{text: c.to_string(), line_number, column_number}));
                                 break;
                             }
                         }
@@ -105,7 +113,7 @@ impl Scanner {
                             _ => st += &n.to_string(),
                         }
                     }
-                    result.push(LexItem::String(LexItemInfo{text: st.to_string(), line_number, column_number}))
+                    result.push(LexItem::StringLiteral(LexItemInfo{text: st.to_string(), line_number, column_number}))
                 }
                 _ => {
                     // is it keyword? if not, then it is an identifier
@@ -132,10 +140,17 @@ impl Scanner {
                                 ) =>
                             {
                                 match st.as_str() {
-                                    "var" | "for" | "end" | "in" | "do" | "read" | "print"
-                                    | "int" | "string" | "bool" | "assert" => {
-                                        result.push(LexItem::Keyword(LexItemInfo{text: st.to_string(), line_number, column_number}))
-                                    }
+                                    "var" => result.push(LexItem::Var(LexItemInfo{text: st.to_string(), line_number, column_number})),
+                                    "for" => result.push(LexItem::For(LexItemInfo{text: st.to_string(), line_number, column_number})),
+                                    "end" => result.push(LexItem::End(LexItemInfo{text: st.to_string(), line_number, column_number})),
+                                    "in" => result.push(LexItem::In(LexItemInfo{text: st.to_string(), line_number, column_number})),
+                                    "do" => result.push(LexItem::Do(LexItemInfo{text: st.to_string(), line_number, column_number})),
+                                    "read" => result.push(LexItem::Read(LexItemInfo{text: st.to_string(), line_number, column_number})),
+                                    "print" => result.push(LexItem::Print(LexItemInfo{text: st.to_string(), line_number, column_number})),
+                                    "int" => result.push(LexItem::Int(LexItemInfo{text: st.to_string(), line_number, column_number})),
+                                    "string" => result.push(LexItem::String(LexItemInfo{text: st.to_string(), line_number, column_number})),
+                                    "bool" => result.push(LexItem::Bool(LexItemInfo{text: st.to_string(), line_number, column_number})),
+                                    "assert" => result.push(LexItem::Assert(LexItemInfo{text: st.to_string(), line_number, column_number})),
                                     _ => result.push(LexItem::Identifier(LexItemInfo{text: st.to_string(), line_number, column_number})),
                                 }
                                 break;
