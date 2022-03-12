@@ -2,6 +2,8 @@ use scanner::lexical_scanner::Scanner;
 use std::env;
 use std::fs;
 mod language;
+mod parser;
+mod data_structures;
 
 mod scanner;
 fn main() {

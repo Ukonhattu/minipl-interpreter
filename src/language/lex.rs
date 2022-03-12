@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum LexItem {
     //One character tokens
     LeftParen(LexItemInfo),
@@ -36,10 +36,16 @@ pub enum LexItem {
     Assert(LexItemInfo),
 
     Identifier(LexItemInfo),
+
+    Default(LexItemInfo)
 }
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct LexItemInfo {
     pub text: String,
     pub line_number: i32,
     pub column_number: i32,
+}
+
+impl Default for LexItem {
+    fn default() -> Self {LexItem::Default(LexItemInfo {text: "default".into(), line_number: -1, column_number: -1})}
 }
