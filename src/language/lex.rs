@@ -11,6 +11,7 @@ pub enum LexItem {
     And(LexItemInfo),
     Not(LexItemInfo),
     StatementEnd(LexItemInfo),
+    Equal(LexItemInfo),
     // One or Two character tokens
     Separator(LexItemInfo),
 

@@ -1,2 +1,2 @@
-var nTimes : int;
+var nTimes : int := 1;
 var y : bool;

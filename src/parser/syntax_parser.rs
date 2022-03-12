@@ -1,4 +1,4 @@
-use std::{panic, env::var};
+use std::panic;
 use std::collections::HashMap;
 use crate::{language::{lex::{LexItem}, ast::{VariableInfo, VariableType, SourceInfo, ConstantInfo}}, data_structures::tree::ArenaTree};
 use crate::language::ast::AstItem;
@@ -29,6 +29,7 @@ impl SyntaxParser {
             let statement = self.parse_stmt(index);
             if statement.0 != None {
                 self.ast.arena[root].children.push(statement.0.unwrap());
+                println!("statement.0 = {}", statement.0.unwrap());
                 self.ast.arena[statement.0.unwrap()].parent = Some(root);
                 index = statement.1;
                 continue;
@@ -46,17 +47,57 @@ impl SyntaxParser {
         (None, index)
     }
 
-    fn parse_expr(&self, index: usize) -> (Option<usize>, usize) {
+    fn parse_expr(&mut self, index: usize) -> (Option<usize>, usize) {
+        let mut i = index.clone();
+
+        let opnd = self.parse_opnd(i);
+        if opnd.0 == None {
+            return (None, index)
+        } else {
+            i = opnd.1;
+        }
+        match &self.tokens[i] {
+            LexItem::Plus(_) => {}
+            LexItem::Minus(_) => {}
+            LexItem::Star(_) => {}
+            LexItem::Slash(_) => {}
+            LexItem::LessThan(_) => {}
+            LexItem::Equal(_) => {}
+            LexItem::And(_) => {}
+            _ => {
+                return (opnd.0, i)
+            }
+        }
         (None, index)
     }
 
-    fn parse_opnd(&self, index: usize) -> Option<usize> {
-        None
+    fn parse_opnd(&mut self, index: usize) -> (Option<usize>, usize) {
+        let mut i = index.clone();
+
+        if let LexItem::IntegerLiteral(t) = &self.tokens[i] {
+            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone()});
+            let constant_node = self.ast.node(constant_item);
+            return (Some(constant_node), i + 1)
+        } else if let LexItem::StringLiteral(t) = &self.tokens[i] {
+            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone()});
+            let constant_node = self.ast.node(constant_item);
+            return (Some(constant_node), i + 1)
+        } else if let LexItem::Identifier(t) = &self.tokens[i] {
+            let variable_info;
+            if self.variables.contains_key(&t.text.clone()) {
+                variable_info = self.variables.get(&t.text.clone())
+            } else {
+                panic!("ERROR use of uninitialized variable, line {line}, column {column}", line = t.line_number, column = t.column_number);
+            }
+            let variable_item = AstItem::Variable(variable_info.unwrap().clone());
+            let variable_node = self.ast.node(variable_item);
+            return (Some(variable_node), i + 1)
+        }
+        // ELSE IF ( <expr> )
+
+        (None, index)
     }
 
-    fn parse_type(&self, index: usize) -> Option<usize> {
-        None
-    }
 
     //-------------------------------------------------------------------------------
 
@@ -106,6 +147,14 @@ impl SyntaxParser {
             i += 1;
         }
 
+        let expr = self.parse_expr(i);
+        if expr.0 != None {
+            let expr_index = expr.0.unwrap();
+            let assign = self.make_assigment_node_constant(var_name, None, var_type);
+            self.ast.arena[assign].children.push(expr_index);
+            self.ast.arena[expr_index].parent = Some(assign);
+            return (Some(assign), i)
+        } 
 
         (None, index)
     }

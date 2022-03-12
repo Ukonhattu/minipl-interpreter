@@ -15,8 +15,8 @@ fn main() {
     
 
     let scan_result = scanner.scan();
-    println!("{:?}", scan_result);
+    println!("{:#?}", scan_result);
     let mut parser = SyntaxParser::new(scan_result.unwrap());
-    println!("{:?}", parser.parse());
+    println!("{:#?}", parser.parse());
 }
 

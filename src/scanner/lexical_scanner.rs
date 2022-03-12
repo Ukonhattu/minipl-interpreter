@@ -14,7 +14,7 @@ impl Scanner {
         let mut column_number = 0;
         while let Some(c) = Scanner::advance(&mut it, &mut column_number) {
             match c {
-                ' ' | '+' | '-' | '*' | '<' | '&' | '!' | ';' | '(' | ')' | '\n' | '\r' => {
+                ' ' | '+' | '-' | '*' | '<' | '&' | '!' | ';' | '(' | ')' | '=' | '\n' | '\r' => {
                     //Detect one character delimeters
                     match c {
                         '+' => result.push(LexItem::Plus(LexItemInfo {
@@ -58,6 +58,11 @@ impl Scanner {
                             column_number,
                         })),
                         ')' => result.push(LexItem::RightParen(LexItemInfo {
+                            text: c.to_string(),
+                            line_number,
+                            column_number,
+                        })),
+                        '=' => result.push(LexItem::Equal(LexItemInfo {
                             text: c.to_string(),
                             line_number,
                             column_number,
