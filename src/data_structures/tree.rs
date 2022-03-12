@@ -1,13 +1,13 @@
 // https://dev.to/deciduously/no-more-tears-no-more-knots-arena-allocated-trees-in-rust-44k6
 // Thanks Ben Lovy
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Node<T>
 where
     T: PartialEq,
 {
     idx: usize,
-    val: T,
-    parent: Option<usize>,
+    pub val: T,
+    pub parent: Option<usize>,
     pub children: Vec<usize>,
 }
 
@@ -25,7 +25,7 @@ where
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ArenaTree<T>
 where
     T: PartialEq,
@@ -39,11 +39,11 @@ where
 {
     pub fn node(&mut self, val: T) -> usize {
         //first see if it exists
-        for node in &self.arena {
-            if node.val == val {
-                return node.idx;
-            }
-        }
+     //   for node in &self.arena {
+      //      if node.val == val {
+     //           return node.idx;
+    //        }
+    //    }
         // Otherwise, add new node
         let idx = self.arena.len();
         self.arena.push(Node::new(idx, val));
