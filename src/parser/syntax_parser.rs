@@ -250,7 +250,7 @@ impl SyntaxParser {
         } else {
             panic!("ERROR Expected keyword do, found {:#?}", self.tokens[i]);
         }
-        let block_node = self.parse_block(i, mem::discriminant(&LexItem::For(LexItemInfo{text: "a".into(), line_number: -1, column_number: -1})));
+        let block_node = self.parse_block(i, mem::discriminant(&LexItem::For(LexItemInfo{text: "a".into(), line_number: -1, column_number: -1}))); // TODO to this smarter lmao (I want the type of LexItem::For to give as a parameter)
         i = block_node.1;
         let for_node = self.ast.node(AstItem::For);
         let variable_node = self.ast.node(AstItem::Variable(variable_info));
