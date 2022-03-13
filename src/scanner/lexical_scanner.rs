@@ -144,19 +144,21 @@ impl Scanner {
                     let mut number = c.to_string();
                     while let Some(n) = it.peek() {
                         match n {
-                            '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => (),
+                            '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
+                                number += &Scanner::advance(&mut it, &mut column_number)
+                                .unwrap_or_default()
+                                .to_string();
+                            },
                             _ => {
                                 result.push(LexItem::IntegerLiteral(LexItemInfo {
-                                    text: c.to_string(),
+                                    text: number,
                                     line_number,
                                     column_number,
                                 }));
                                 break;
                             }
                         }
-                        number += &Scanner::advance(&mut it, &mut column_number)
-                            .unwrap_or_default()
-                            .to_string();
+                        
                     }
                 }
                 '"' => {

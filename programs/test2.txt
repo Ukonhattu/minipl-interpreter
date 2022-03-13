@@ -1,2 +1,9 @@
-var nTimes : int := 1;
-var y : bool;
+var x : int;
+var y : int;
+var c : int;
+for x in 0..10 do
+    for y in 0..10 do
+        print x;
+        c := (x + y);
+    end for;
+end for;
