@@ -72,7 +72,7 @@ where
 
         // If not, try all children
         for p in &self.arena[idx].children {
-            if let Some(x) = self.depth_to_target(*p, &target) {
+            if let Some(x) = self.depth_to_target(*p, target) {
                 return Some(1 + x);
             }
         }

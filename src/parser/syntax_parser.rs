@@ -1,9 +1,9 @@
-use std::any::TypeId;
-use std::mem::{self, discriminant, Discriminant};
+
+use std::mem::{self, Discriminant};
 use std::{panic, any::Any};
 use std::collections::HashMap;
 use crate::language::lex::LexItemInfo;
-use crate::{language::{lex::{LexItem}, ast::{VariableInfo, VariableType, SourceInfo, ConstantInfo, BinOpType}}, data_structures::tree::ArenaTree};
+use crate::{language::{lex::{LexItem}, ast::{VariableInfo, VariableType, ConstantInfo, BinOpType}}, data_structures::tree::ArenaTree};
 use crate::language::ast::AstItem;
 
 pub struct SyntaxParser {
@@ -19,14 +19,14 @@ impl SyntaxParser {
             panic!("ERROR Token stream empty!");
         }
         Self {
-            tokens: tokens,
+            tokens,
             variables: HashMap::new(),
             ast: ArenaTree::default()
         }
     }
 
     pub fn parse(&mut self) -> ArenaTree<AstItem> {
-        return self.parse_stmts();
+        self.parse_stmts()
     }
 
     fn parse_stmts(&mut self) -> ArenaTree<AstItem>{
@@ -47,7 +47,7 @@ impl SyntaxParser {
     }
 
     fn parse_block(&mut self, index: usize, end: Discriminant<LexItem>) -> (Option<usize>, usize) {
-        let mut i = index.clone();
+        let mut i = index;
         let block_node = self.ast.node(AstItem::Block);
         while i < self.tokens.len() {
             if let LexItem::End(_) = &self.tokens[i] {
@@ -102,7 +102,7 @@ impl SyntaxParser {
     }
 
     fn parse_expr(&mut self, index: usize) -> (Option<usize>, usize) { // <opnd> <op> <opnd> | [<Not>] <opnd>
-        let mut i = index.clone();
+        let mut i = index;
         let mut has_unary_opnd = false;
         if let LexItem::Not(_) = &self.tokens[i] {
             has_unary_opnd = true;
@@ -165,7 +165,7 @@ impl SyntaxParser {
     }
 
     fn parse_opnd(&mut self, index: usize) -> (Option<usize>, usize) { // <int_literal> | <string_literal> | <var_identifier> | "(" <expr> ")"
-        let mut i = index.clone();
+        let mut i = index;
 
         if let LexItem::IntegerLiteral(t) = &self.tokens[i] {
             let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone()});
@@ -205,7 +205,7 @@ impl SyntaxParser {
     }
 
     pub fn parse_for(&mut self, index: usize) -> (Option<usize>, usize) {
-        let mut i = index.clone();
+        let mut i = index;
         let variable_info;
 
         if let LexItem::For(_) = &self.tokens[i] {
@@ -273,7 +273,7 @@ impl SyntaxParser {
     //-------------------------------------------------------------------------------
     
     pub fn parse_read(&mut self, index: usize) -> (Option<usize>, usize) {
-        let mut i = index.clone();
+        let mut i = index;
 
         if let LexItem::Read(_) = &self.tokens[i] {
             i += 1;
@@ -298,14 +298,14 @@ impl SyntaxParser {
             let variable_node = self.ast.node(variable_item);
             self.ast.arena[read_note].children.push(variable_node);
             self.ast.arena[variable_node].parent = Some(read_note);
-            return (Some(read_note), i);
+            (Some(read_note), i)
         } else {
             panic!("Expected semicolon, found {:#?}", self.tokens[i]);
         }
     }
 
     fn parse_assert(&mut self, index: usize) -> (Option<usize>, usize) {
-        let mut i = index.clone();
+        let mut i = index;
 
         if let LexItem::Assert(_) = &self.tokens[i] {
             i += 1;
@@ -327,7 +327,7 @@ impl SyntaxParser {
                 self.ast.arena[expr.0.unwrap()].parent = Some(assert_node);
                 i += 1;
                 if let LexItem::StatementEnd(_) = &self.tokens[i] {
-                    return (Some(assert_node), i)
+                    (Some(assert_node), i)
                 } else {
                     panic!("ERROR expected ';', found {:#?}", self.tokens[i]);
                 }
@@ -341,7 +341,7 @@ impl SyntaxParser {
     }
 
     fn parse_print(&mut self, index: usize) -> (Option<usize>, usize) {
-        let mut i = index.clone();
+        let mut i = index;
         
         if let LexItem::Print(_) = &self.tokens[i] {
             i += 1;
@@ -361,7 +361,7 @@ impl SyntaxParser {
             let print_item = AstItem::Print;
             let print_node = self.ast.node(print_item);
             self.ast.arena[print_node].children.push(expr.0.unwrap());
-            return (Some(print_node), i)
+            (Some(print_node), i)
         } else {
             panic!("Expected semicolon, found {:#?}", self.tokens[i]);
         }
@@ -370,7 +370,7 @@ impl SyntaxParser {
 
     fn parse_assigment(&mut self, index: usize) -> (Option<usize>, usize) { // "var" <var_ident> ":" <type> [":=" <expr>] | <var_ident> ":=" <expr>
         let mut first_assign = false;
-        let mut i = index.clone();
+        let mut i = index;
         let var_type: VariableType;
         let var_name: String;
         if let LexItem::Var(_) = &self.tokens[i] {
@@ -382,10 +382,8 @@ impl SyntaxParser {
                 if self.variables.contains_key(&t.text) {
                     panic!("ERROR variable name already defined, line {line}, column {column}", line = t.line_number, column = t.column_number)
                 }  
-            } else {
-                if !self.variables.contains_key(&t.text) {
-                    panic!("ERROR undefined variable {var_name},  line {line}, column {column}", var_name = &t.text ,line = t.line_number, column = t.column_number)
-                }
+            } else if !self.variables.contains_key(&t.text) {
+                panic!("ERROR undefined variable {var_name},  line {line}, column {column}", var_name = &t.text ,line = t.line_number, column = t.column_number)
             }
             var_name = t.text.clone();
             i += 1;
