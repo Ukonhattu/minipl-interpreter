@@ -22,6 +22,8 @@ pub enum LexItem {
     //Literals
     StringLiteral(LexItemInfo),
     IntegerLiteral(LexItemInfo),
+    BoolTrue(LexItemInfo),
+    BoolFalse(LexItemInfo),
 
     //Keywords
     Var(LexItemInfo),

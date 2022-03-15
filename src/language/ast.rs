@@ -41,6 +41,7 @@ pub enum  BinOpType {
 #[derive(Debug, PartialEq, Clone)]
 pub struct  ConstantInfo {
     pub value: String,
+    pub const_type: VariableType,
     //pub source_info: SourceInfo
 }
 

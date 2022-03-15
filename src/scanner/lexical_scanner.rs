@@ -271,6 +271,16 @@ impl Scanner {
                                         line_number,
                                         column_number,
                                     })),
+                                    "true" => result.push(LexItem::BoolTrue(LexItemInfo {
+                                        text: st.to_string(),
+                                        line_number,
+                                        column_number,
+                                    })),
+                                    "false" => result.push(LexItem::BoolFalse(LexItemInfo {
+                                        text: st.to_string(),
+                                        line_number,
+                                        column_number,
+                                    })),
                                     _ => result.push(LexItem::Identifier(LexItemInfo {
                                         text: st.to_string(),
                                         line_number,

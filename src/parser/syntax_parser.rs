@@ -121,6 +121,9 @@ impl SyntaxParser {
             return (Some(not_node), i)
         }
         i += 1;
+        if i >= self.tokens.len() {
+            return (opnd.0, i-1)
+        }
         // Does it have <op>
         let op_type;
         match &self.tokens[i] {
@@ -168,11 +171,19 @@ impl SyntaxParser {
         let mut i = index;
 
         if let LexItem::IntegerLiteral(t) = &self.tokens[i] {
-            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone()});
+            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone(), const_type: VariableType::Int});
             let constant_node = self.ast.node(constant_item);
             return (Some(constant_node), i)
         } else if let LexItem::StringLiteral(t) = &self.tokens[i] {
-            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone()});
+            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone(), const_type: VariableType::String});
+            let constant_node = self.ast.node(constant_item);
+            return (Some(constant_node), i)
+        }else if let LexItem::BoolTrue(t) = &self.tokens[i] {
+            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone(), const_type: VariableType::Bool});
+            let constant_node = self.ast.node(constant_item);
+            return (Some(constant_node), i)
+        }else if let LexItem::BoolFalse(t) = &self.tokens[i] {
+            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone(), const_type: VariableType::Bool});
             let constant_node = self.ast.node(constant_item);
             return (Some(constant_node), i)
         } else if let LexItem::Identifier(t) = &self.tokens[i] {
@@ -418,7 +429,7 @@ impl SyntaxParser {
                 Some(t) => {
                     var_type = t.var_type.clone();
                 }
-                None => panic!("Unexpected ERROR variable {var_name} is defined but not found!")
+                None => panic!("Unexpected ERROR variable {var_name} is defined but not found!") // This shouldn't ever happen 
             }
         }
 
@@ -450,13 +461,13 @@ impl SyntaxParser {
     fn make_assigment_node_constant(&mut self, name: String, value: Option<String>, var_type: VariableType) -> usize {
         let assign_item: AstItem = AstItem::Assign;
         let assign = self.ast.node(assign_item);
-        let variable_item = AstItem::Variable(VariableInfo{name, var_type});
+        let variable_item = AstItem::Variable(VariableInfo{name, var_type: var_type.clone()});
         let variable = self.ast.node(variable_item);
 
         self.ast.arena[assign].children.push(variable);
         self.ast.arena[variable].parent = Some(assign);
         if value != None {
-            let value_item = AstItem::Constant(ConstantInfo {value: value.unwrap_or_default()});
+            let value_item = AstItem::Constant(ConstantInfo {value: value.unwrap_or_default(), const_type: var_type});
             let value_node = self.ast.node(value_item);
             self.ast.arena[assign].children.push(value_node);
             self.ast.arena[value_node].parent = Some(assign);
