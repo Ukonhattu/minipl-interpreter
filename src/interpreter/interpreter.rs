@@ -12,7 +12,7 @@ impl Interpreter {
 
     pub fn new(ast: ArenaTree<AstItem>) -> Self {
         Self {
-            ast: ast,
+            ast,
             variables: HashMap::new()
         }
     }
@@ -48,11 +48,11 @@ impl Interpreter {
         }
     }
 
-    fn handle_for(&mut self, node: Node<AstItem>) {
+    fn handle_for(&mut self, _node: Node<AstItem>) {
         panic!("NOT IMPLEMENTED")
     }
 
-    fn handle_assert(&mut self, node: Node<AstItem>) {
+    fn handle_assert(&mut self, _node: Node<AstItem>) {
         panic!("NOT IMPLEMENTED")
     }
 
@@ -72,16 +72,16 @@ impl Interpreter {
         std::io::stdin().read_line(&mut line).unwrap();
         match var_type {
             VariableType::Int => {
-                var = RunTimeVariable{name: var_name.clone(), var_type: var_type, value: Value::Int(line.trim().parse().unwrap())}
+                var = RunTimeVariable{name: var_name.clone(), var_type, value: Value::Int(line.trim().parse().unwrap())}
             }
             VariableType::String => {
                 trim_newline(&mut line);
-                var = RunTimeVariable{name: var_name.clone(), var_type: var_type, value: Value::String(line)}
+                var = RunTimeVariable{name: var_name.clone(), var_type, value: Value::String(line)}
             }
             VariableType::Bool => panic!("Cannot read a boolean value")
         }
-        if self.variables.contains_key(&var_name) {
-            self.variables.insert(var_name, var);
+        if let std::collections::hash_map::Entry::Occupied(mut e) = self.variables.entry(var_name) {
+            e.insert(var);
         } else {
             panic!("Trying to read to an undefined variable")
         }
@@ -103,28 +103,28 @@ impl Interpreter {
         if node.children.len() > 1 {
             let right_child = self.ast.arena[node.children[1]].clone();
             var_value = self.expect_expr(right_child);
-            var = RunTimeVariable {name: var_name.clone(), var_type: var_type, value: var_value};    
+            var = RunTimeVariable {name: var_name.clone(), var_type, value: var_value};    
         } else {
-            var = RunTimeVariable {name: var_name.clone(), var_type: var_type, value: Value::NULL};
+            var = RunTimeVariable {name: var_name.clone(), var_type, value: Value::NULL};
         }
         self.variables.insert(var_name, var);
     }
 
     fn expect_expr(&mut self, node: Node<AstItem>) -> Value {
-        if node.children.len() == 0 {
+        if node.children.is_empty() {
             //let child = self.ast.arena[node.children[0]].clone();
             return self.expect_opnd(node)
         }
         match node.val.clone() {
             AstItem::BinOp(t) => {
                 match t {
-                    BinOpType::And => return self.handle_and(node),
-                    BinOpType::Divide => return self.handle_divide(node),
-                    BinOpType::Equal => return self.handle_equal(node),
-                    BinOpType::LessThan => return self.handle_less_than(node),
-                    BinOpType::Minus => return self.handle_minus(node),
-                    BinOpType::Multiply => return self.handle_multiply(node),  
-                    BinOpType::Plus => return self.handle_plus(node),           
+                    BinOpType::And => self.handle_and(node),
+                    BinOpType::Divide => self.handle_divide(node),
+                    BinOpType::Equal => self.handle_equal(node),
+                    BinOpType::LessThan => self.handle_less_than(node),
+                    BinOpType::Minus => self.handle_minus(node),
+                    BinOpType::Multiply => self.handle_multiply(node),  
+                    BinOpType::Plus => self.handle_plus(node),           
                 }
             }
             _ => panic!("Error, unexpected node {:#?}", node)
@@ -244,10 +244,10 @@ impl Interpreter {
             AstItem::Constant(t) => {
                 match t.const_type {
                     VariableType::String => {
-                        return Value::String(t.value.clone())
+                        Value::String(t.value.clone())
                     }
                     VariableType::Int => {
-                        return Value::Int(t.value.clone().parse().unwrap())
+                        Value::Int(t.value.clone().parse().unwrap())
                     }
                     VariableType::Bool => {
                         let b_value;
@@ -256,7 +256,7 @@ impl Interpreter {
                             "false" => b_value = false,
                             _ => panic!("UNEXPECTED ERROR bool value is not true or false")
                         }
-                        return Value::Bool(b_value)
+                        Value::Bool(b_value)
                     }
                     
                 }
@@ -266,7 +266,7 @@ impl Interpreter {
                 let opnd = self.expect_opnd(child_node);
                 match opnd {
                     Value::Bool(t) => {
-                        return Value::Bool(!t)
+                        Value::Bool(!t)
                     }
 
                     _ => {
@@ -277,12 +277,12 @@ impl Interpreter {
             AstItem::Variable(t) => {
                 let value = self.variables.get(&t.name);
                 match value {
-                    Some(t) => return t.value.clone(),
+                    Some(t) => t.value.clone(),
                     None => panic!("NULL Reference")
                 }
             }
             _ => {
-                return self.expect_expr(node);
+                self.expect_expr(node)
             }
         }
     }
