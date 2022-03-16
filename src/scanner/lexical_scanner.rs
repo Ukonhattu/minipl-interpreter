@@ -179,10 +179,8 @@ impl Scanner {
                                             Scanner::advance(&mut it, &mut column_number);
                                         }
                                         _ => {
-                                            println!("before {:#?}", st);
                                             st += &n.to_string();
                                             st += &m.to_string();
-                                            println!("after {:#?}", st);
                                             Scanner::advance(&mut it, &mut column_number);
                                         }
                                     }
