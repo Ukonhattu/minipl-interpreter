@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{collections::HashMap};
+use std::{collections::HashMap, io::Write};
 
 use crate::{data_structures::tree::{ArenaTree, Node}, language::ast::{AstItem, VariableType, BinOpType}};
 
@@ -30,7 +30,7 @@ impl Interpreter {
             AstItem::Print => {
                 let child = self.ast.arena[node.children[0]].clone();
                 let value = self.expect_expr(child);
-                print!("{}", value);
+                self.handle_print(value);
             }
             AstItem::Assign => {
                 self.handle_assign(node);
@@ -46,6 +46,28 @@ impl Interpreter {
             }
             _ => panic!("Unexpected node {:#?}", node)
         }
+    }
+
+    fn handle_print(&self, value: Value) {
+        match value {
+            Value::String(t) => {
+                std::io::stdout().write(t.as_bytes()).unwrap();
+            }
+            Value::Bool(t) => {
+                if t {
+                    std::io::stdout().write(b"true").unwrap();
+                } else {
+                    std::io::stdout().write(b"false").unwrap();
+                }
+            }
+            Value::Int(t) => {
+                std::io::stdout().write(t.to_string().as_bytes()).unwrap();
+            }
+            Value::NULL => {
+                std::io::stdout().write(b"NULL").unwrap();
+            }
+        }
+        std::io::stdout().flush().expect("std flush failed");
     }
 
     fn handle_for(&mut self, node: Node<AstItem>) {
