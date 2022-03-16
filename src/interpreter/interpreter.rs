@@ -109,7 +109,7 @@ impl Interpreter {
         match expr {
             Value::Bool(t) => {
                 if t {
-                    return; 
+                     
                 } else {
                     panic!("ASSERT FAILED")
                 }

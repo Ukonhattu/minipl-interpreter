@@ -1,6 +1,6 @@
 
 use std::mem::{self, Discriminant};
-use std::{panic, any::Any};
+use std::{panic};
 use std::collections::HashMap;
 use crate::language::lex::LexItemInfo;
 use crate::{language::{lex::{LexItem}, ast::{VariableInfo, VariableType, ConstantInfo, BinOpType}}, data_structures::tree::ArenaTree};
