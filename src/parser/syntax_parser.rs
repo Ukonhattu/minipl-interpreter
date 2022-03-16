@@ -51,11 +51,8 @@ impl SyntaxParser {
         let block_node = self.ast.node(AstItem::Block);
         while i < self.tokens.len() {
             if let LexItem::End(_) = &self.tokens[i] {
-                
-                i += 1;
-                println!("type id of {:#?} = {:#?}, end = {:#?}", &self.tokens[i], self.tokens[i].type_id(), end);            
+                i += 1;       
                 if mem::discriminant(&self.tokens[i]) == end {
-                    println!("HERE");
                     i += 1;
                     if let LexItem::StatementEnd(_) = &self.tokens[i] {
                         return (Some(block_node), i);

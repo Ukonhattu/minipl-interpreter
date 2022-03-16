@@ -48,12 +48,76 @@ impl Interpreter {
         }
     }
 
-    fn handle_for(&mut self, _node: Node<AstItem>) {
-        panic!("NOT IMPLEMENTED")
+    fn handle_for(&mut self, node: Node<AstItem>) {
+        let variable_node = self.ast.arena[node.children[0]].clone();
+        let range_node = self.ast.arena[node.children[1]].clone();
+        let block_node = self.ast.arena[node.children[2]].clone();
+        let variable_info;
+        let mut variable;
+        if let AstItem::Variable(t) = variable_node.clone().val {
+            variable_info = t;
+        } else {
+            panic!("ERROR for statement expected variable, found {:#?}", variable_node.val);
+        }
+        let variable_option = self.variables.get(&variable_info.name);
+        match variable_option {
+            Some(t) => variable = t.clone(),
+            None => panic!("Undefined variable {:#?}", variable_node.val)
+        }
+        let range_left_node = self.ast.arena[range_node.children[0]].clone();
+        let range_right_node = self.ast.arena[range_node.children[1]].clone();
+        let range_left_expr = self.expect_expr(range_left_node);
+        let range_right_expr = self.expect_expr(range_right_node);
+        let range_left;
+        let range_right;
+        match (range_left_expr.clone(), range_right_expr.clone()) {
+            (Value::Int(t), Value::Int(v)) => {
+                range_left = t;
+                range_right = v;
+            }
+            _ => {
+                panic!("ERROR range values are not int. Left = {}, Right = {}", range_left_expr, range_right_expr)
+            }
+        }
+
+        variable.value = Value::Int(range_left);
+        self.variables.insert(variable.name.clone(), variable.clone());
+        for _ in range_left..=range_right {
+            let block_children = block_node.children.clone();
+            for child in block_children {
+                let node = self.ast.arena[child].clone();
+                self.parse_node(node);
+            }
+            let old_value;
+            match variable.value {
+                Value::Int(t) => {
+                    old_value = t;
+                }
+                _ => {
+                    panic!("Loop variable is not int {:#?}", node);
+                }
+            }
+            variable.value = Value::Int(old_value + 1);
+            self.variables.insert(variable.name.clone(), variable.clone());
+        }
+        
     }
 
-    fn handle_assert(&mut self, _node: Node<AstItem>) {
-        panic!("NOT IMPLEMENTED")
+    fn handle_assert(&mut self, node: Node<AstItem>) {
+        let child = self.ast.arena[node.children[0]].clone();
+        let expr = self.expect_expr(child);
+        match expr {
+            Value::Bool(t) => {
+                if t {
+                    return; 
+                } else {
+                    panic!("ASSERT FAILED")
+                }
+            }
+            _ => {
+                panic!("ERROR Assert expression is not evaluated into a bool");
+            }
+        }
     }
 
     fn handle_read(&mut self, node: Node<AstItem>) {
@@ -110,9 +174,8 @@ impl Interpreter {
         self.variables.insert(var_name, var);
     }
 
-    fn expect_expr(&mut self, node: Node<AstItem>) -> Value {
+    fn expect_expr(&self, node: Node<AstItem>) -> Value {
         if node.children.is_empty() {
-            //let child = self.ast.arena[node.children[0]].clone();
             return self.expect_opnd(node)
         }
         match node.val.clone() {
@@ -131,7 +194,7 @@ impl Interpreter {
         }
     }
     
-    fn handle_plus(&mut self, node: Node<AstItem>) -> Value {
+    fn handle_plus(&self, node: Node<AstItem>) -> Value {
         let left_child = self.ast.arena[node.children[0]].clone();
         let right_child = self.ast.arena[node.children[1]].clone();
         let left_side = self.expect_expr(left_child);
@@ -151,7 +214,7 @@ impl Interpreter {
             _ => panic!("Incomtabile add of two values")
         }
     }
-    fn handle_minus(&mut self, node: Node<AstItem>) -> Value {
+    fn handle_minus(&self, node: Node<AstItem>) -> Value {
         let left_child = self.ast.arena[node.children[0]].clone();
         let right_child = self.ast.arena[node.children[1]].clone();
         let left_side = self.expect_expr(left_child);
@@ -165,7 +228,7 @@ impl Interpreter {
             _ => panic!("Incomtabile substract of two values")
         }
     }
-    fn handle_multiply(&mut self, node: Node<AstItem>) -> Value {
+    fn handle_multiply(&self, node: Node<AstItem>) -> Value {
         let left_child = self.ast.arena[node.children[0]].clone();
         let right_child = self.ast.arena[node.children[1]].clone();
         let left_side = self.expect_expr(left_child);
@@ -179,7 +242,7 @@ impl Interpreter {
             _ => panic!("Incomtabile multiply of two values")
         }
     }
-    fn handle_divide(&mut self, node: Node<AstItem>) -> Value {
+    fn handle_divide(&self, node: Node<AstItem>) -> Value {
         let left_child = self.ast.arena[node.children[0]].clone();
         let right_child = self.ast.arena[node.children[1]].clone();
         let left_side = self.expect_expr(left_child);
@@ -193,7 +256,7 @@ impl Interpreter {
             _ => panic!("Incomtabile division of two values")
         }
     }
-    fn handle_less_than(&mut self, node: Node<AstItem>) -> Value {
+    fn handle_less_than(&self, node: Node<AstItem>) -> Value {
         let left_child = self.ast.arena[node.children[0]].clone();
         let right_child = self.ast.arena[node.children[1]].clone();
         let left_side = self.expect_expr(left_child);
@@ -206,7 +269,7 @@ impl Interpreter {
             _ => panic!("Incomtabile comparison of two values")
         }
     }
-    fn handle_equal(&mut self, node: Node<AstItem>) -> Value {
+    fn handle_equal(&self, node: Node<AstItem>) -> Value {
         let left_child = self.ast.arena[node.children[0]].clone();
         let right_child = self.ast.arena[node.children[1]].clone();
         let left_side = self.expect_expr(left_child);
@@ -225,7 +288,7 @@ impl Interpreter {
             _ => panic!("Incomtabile comparison of two values")
         }
     }
-    fn handle_and(&mut self, node: Node<AstItem>) -> Value {
+    fn handle_and(&self, node: Node<AstItem>) -> Value {
         let left_child = self.ast.arena[node.children[0]].clone();
         let right_child = self.ast.arena[node.children[1]].clone();
         let left_side = self.expect_expr(left_child);
@@ -239,7 +302,7 @@ impl Interpreter {
         }
     }
 
-    fn expect_opnd(&mut self, node: Node<AstItem>) -> Value {
+    fn expect_opnd(&self, node: Node<AstItem>) -> Value {
         match &node.val {
             AstItem::Constant(t) => {
                 match t.const_type {
@@ -296,6 +359,7 @@ fn trim_newline(s: &mut String) {
     }
 }
 
+#[derive(Clone)]
 struct RunTimeVariable {
     name: String,
     var_type: VariableType,
