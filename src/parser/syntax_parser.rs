@@ -1,10 +1,11 @@
 
+use std::env::var;
 use std::mem::{self, Discriminant};
 use std::{panic};
 use std::collections::HashMap;
 use crate::language::lex::LexItemInfo;
 use crate::{language::{lex::{LexItem}, ast::{VariableInfo, VariableType, ConstantInfo, BinOpType}}, data_structures::tree::ArenaTree};
-use crate::language::ast::AstItem;
+use crate::language::ast::{AstItem, SourceInfo};
 
 pub struct SyntaxParser {
     tokens: Vec<LexItem>,
@@ -168,19 +169,19 @@ impl SyntaxParser {
         let mut i = index;
 
         if let LexItem::IntegerLiteral(t) = &self.tokens[i] {
-            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone(), const_type: VariableType::Int});
+            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone(), const_type: VariableType::Int, source_info: SourceInfo {line: t.line_number, column: t.column_number}});
             let constant_node = self.ast.node(constant_item);
             return (Some(constant_node), i)
         } else if let LexItem::StringLiteral(t) = &self.tokens[i] {
-            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone(), const_type: VariableType::String});
+            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone(), const_type: VariableType::String, source_info: SourceInfo {line: t.line_number, column: t.column_number}});
             let constant_node = self.ast.node(constant_item);
             return (Some(constant_node), i)
         }else if let LexItem::BoolTrue(t) = &self.tokens[i] {
-            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone(), const_type: VariableType::Bool});
+            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone(), const_type: VariableType::Bool, source_info: SourceInfo {line: t.line_number, column: t.column_number}});
             let constant_node = self.ast.node(constant_item);
             return (Some(constant_node), i)
         }else if let LexItem::BoolFalse(t) = &self.tokens[i] {
-            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone(), const_type: VariableType::Bool});
+            let constant_item = AstItem::Constant(ConstantInfo {value: t.text.clone(), const_type: VariableType::Bool, source_info: SourceInfo {line: t.line_number, column: t.column_number}});
             let constant_node = self.ast.node(constant_item);
             return (Some(constant_node), i)
         } else if let LexItem::Identifier(t) = &self.tokens[i] {
@@ -381,6 +382,8 @@ impl SyntaxParser {
         let mut i = index;
         let var_type: VariableType;
         let var_name: String;
+        let var_line;
+        let var_column;
         if let LexItem::Var(_) = &self.tokens[i] {
             first_assign = true;
             i += 1;
@@ -394,6 +397,8 @@ impl SyntaxParser {
                 panic!("ERROR undefined variable {var_name},  line {line}, column {column}", var_name = &t.text ,line = t.line_number, column = t.column_number)
             }
             var_name = t.text.clone();
+            var_line = t.line_number;
+            var_column = t.column_number;
             i += 1;
         } else {
             return (None, index)
@@ -417,9 +422,9 @@ impl SyntaxParser {
             } else {
                 return (None, index)
             }
-            self.variables.insert(var_name.clone(), VariableInfo {name: var_name.clone(), var_type: var_type.clone()});
+            self.variables.insert(var_name.clone(), VariableInfo {name: var_name.clone(), var_type: var_type.clone(), source_info: SourceInfo {line: var_line, column: var_column}});
             if let LexItem::StatementEnd(_) = &self.tokens[i] {
-                return (Some(self.make_assigment_node_constant(var_name,None, var_type)), i);
+                return (Some(self.make_assigment_node_constant(var_name,None, var_type, var_line, var_column)), i);
             }
         } else {
             match self.variables.get(&var_name) {
@@ -442,7 +447,7 @@ impl SyntaxParser {
             i = expr.1 + 1;
             if let LexItem::StatementEnd(_) = &self.tokens[i] {
                 let expr_index = expr.0.unwrap();
-                let assign = self.make_assigment_node_constant(var_name, None, var_type);
+                let assign = self.make_assigment_node_constant(var_name, None, var_type, var_line, var_column);
                 self.ast.arena[assign].children.push(expr_index);
                 self.ast.arena[expr_index].parent = Some(assign);
                 return (Some(assign), i)
@@ -455,16 +460,16 @@ impl SyntaxParser {
         (None, index)
     }
 
-    fn make_assigment_node_constant(&mut self, name: String, value: Option<String>, var_type: VariableType) -> usize {
+    fn make_assigment_node_constant(&mut self, name: String, value: Option<String>, var_type: VariableType, var_line: i32, var_column: i32) -> usize {
         let assign_item: AstItem = AstItem::Assign;
         let assign = self.ast.node(assign_item);
-        let variable_item = AstItem::Variable(VariableInfo{name, var_type: var_type.clone()});
+        let variable_item = AstItem::Variable(VariableInfo{name, var_type: var_type.clone(), source_info: SourceInfo {line: var_line, column: var_column}});
         let variable = self.ast.node(variable_item);
 
         self.ast.arena[assign].children.push(variable);
         self.ast.arena[variable].parent = Some(assign);
         if value != None {
-            let value_item = AstItem::Constant(ConstantInfo {value: value.unwrap_or_default(), const_type: var_type});
+            let value_item = AstItem::Constant(ConstantInfo {value: value.unwrap_or_default(), const_type: var_type,source_info: SourceInfo {line: var_line, column: var_column}});
             let value_node = self.ast.node(value_item);
             self.ast.arena[assign].children.push(value_node);
             self.ast.arena[value_node].parent = Some(assign);

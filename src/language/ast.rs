@@ -24,7 +24,7 @@ impl Default for AstItem {
 pub struct VariableInfo {
     pub name: String,
     pub var_type: VariableType,
-    //pub source_info: SourceInfo
+    pub source_info: SourceInfo
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -42,7 +42,7 @@ pub enum  BinOpType {
 pub struct  ConstantInfo {
     pub value: String,
     pub const_type: VariableType,
-    //pub source_info: SourceInfo
+    pub source_info: SourceInfo
 }
 
 #[derive(Debug, PartialEq, Clone)]
