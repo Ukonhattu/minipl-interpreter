@@ -1,5 +1,5 @@
 
-use std::env::var;
+
 use std::mem::{self, Discriminant};
 use std::{panic};
 use std::collections::HashMap;
